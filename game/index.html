@@ -1,19 +1,56 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Block Dodger</title>
-<style>
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #11141b; }
-  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
-  /* Read aloud, never shown: the status line screen readers announce. */
-  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-</style>
+<link rel="icon" href="data:,">
+<title>Mirage City — Desert Heat Run</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-<canvas id="game" aria-label="Block Dodger: move the paddle left and right to dodge falling blocks and catch coins"></canvas>
-<p id="status" role="status" aria-live="polite"></p>
-<script type="module" src="./src/main.js"></script>
+<canvas id="game-canvas"></canvas>
+
+<div id="hud">
+  <div id="minimap-wrap"><canvas id="minimap" width="168" height="168"></canvas></div>
+  <div id="stars" title="Wanted level">☆☆☆☆☆</div>
+  <div id="health-wrap"><div id="health-fill"></div><span id="health-label">HEALTH</span></div>
+  <div id="money">$0</div>
+  <div id="objective"></div>
+  <div id="timer"></div>
+  <div id="speed"></div>
+  <div id="toast"></div>
+  <div id="briefing"><div id="briefing-title"></div><div id="briefing-text"></div></div>
+  <div id="hint">WASD move / drive · mouse drag camera · click shoot · E enter car · F steal car · Space brake · P pause · M mute</div>
+  <button id="btn-mute">🔊 Mute (M)</button>
+</div>
+
+<div id="menu">
+  <div id="menu-inner">
+    <h1 id="menu-title">MIRAGE CITY</h1>
+    <h2>Desert Heat Run</h2>
+    <p id="menu-sub"></p>
+    <p id="menu-story">Solara — a casino city in the desert at dusk. Jax Moreno, courier
+    driver, takes six jobs from dispatcher Rosa Delgado: parcels, a VIP,
+    a shootout, and finally the Solara Grand vault. Steal cars, outrun the
+    law, and don't get WASTED.</p>
+    <div id="menu-buttons">
+      <button id="btn-new">▶ New Game</button>
+      <button id="btn-continue">↻ Continue</button>
+      <button id="btn-resume">▶ Resume</button>
+      <button id="btn-restart-mission">↻ Restart Mission</button>
+      <button id="btn-quit-menu">☰ Main Menu</button>
+      <button id="btn-respawn">✚ Get Patched Up</button>
+      <button id="btn-again">▶ Play Again</button>
+    </div>
+    <p id="menu-controls">WASD walk / drive · drag mouse to orbit the camera · click to shoot ·
+    E enter a parked car · F steal a moving car (+1 ★) · Space handbrake ·
+    Shift run · P pause · R restart mission · M mute · progress autosaves every 10s</p>
+    <p id="menu-credit">An original game for the make.fun GTA 6 bounty. Solara, Jax Moreno,
+    Rosa Delgado and the Dust Vipers are original creations. Built with three.js, no network requests.</p>
+  </div>
+</div>
+
+<script src="three.min.js"></script>
+<script type="module" src="src/main.js"></script>
 </body>
 </html>
