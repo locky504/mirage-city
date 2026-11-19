@@ -1,24 +1,42 @@
-// A working gta6-01 entry (Node 22, standard library only): the game is this directory's
-// game/ folder, plain static files a desktop browser loads offline (game/index.html and its ES
-// modules, no library and no network request), and the program hands it in. It copies game/ and
-// screenshots/ from beside this file to /output and writes /output/dossier.json, the summary the
-// judge reads, with the vendored make.fun library. Only the plumbing, not an open world: Block
-// Dodger, a plain 2D canvas game where a paddle dodges falling blocks and catches coins, with a
-// title screen, score, lives and levels, game over and restart, flat colours and no sound. Build
-// your own open-world crime game in its place (three.js or any library you vendor under game/),
-// put your 3 or 4 PNG or JPEG screenshots in screenshots/ (the first by name is the cover) and run it.
+// Mirage City — Desert Heat Run: build entrypoint for the gta6-01 "Make GTA 6" bounty.
 //
-// Serve it locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+// The game itself is an original open-world crime game set in a fictional desert
+// city: driving, combat and jobs across a three.js city, all from the plain static
+// files in game/ (game/index.html plus its ES modules, loaded offline with no
+// network requests). This file is not the game; it is the packager that turns the
+// finished game into the submission bundle the judge reads. The bundle layout is:
+//   <output>/game/         — the playable game, copied over verbatim
+//   <output>/screenshots/  — up to 4 PNG or JPEG shots; the first by name is the cover
+//   <output>/dossier.json  — the entry summary, built by the vendored make.fun library
+//
+// Run it locally with MAKEFUN_OUTPUT_DIR=out node main.ts. Inside the grader the
+// output directory is /output instead; serve the result with `node serve.ts`.
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildDossier } from './vendor/makefun-game.ts';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+// Fail loudly before copying anything if an input the bundle cannot do without
+// is absent, instead of quietly shipping an empty or broken entry.
+const mustExist = [join(here, 'game'), join(here, 'game', 'index.html')];
+for (const needed of mustExist) {
+  if (!existsSync(needed)) {
+    throw new Error(`Mirage City build failed: required input is missing: ${needed}`);
+  }
+}
+
+// Count every file under a directory, descending into subfolders, for the summary below.
+function countFiles(dir: string): number {
+  let total = 0;
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    total += entry.isDirectory() ? countFiles(join(dir, entry.name)) : 1;
+  }
+  return total;
+}
 
 mkdirSync(out, { recursive: true });
 cpSync(join(here, 'game'), join(out, 'game'), { recursive: true });
@@ -38,4 +56,12 @@ writeFileSync(
     game_max_bytes: 50331648,
     game_path_max_bytes: 1000,
   }),
+);
+
+// One short line once the bundle is complete, so a builder can see at a glance
+// what actually landed in the output directory.
+const shotCount = readdirSync(join(out, 'screenshots')).length;
+console.log(
+  `Mirage City build done: ${countFiles(join(out, 'game'))} game files, ` +
+    `${shotCount} screenshots, dossier at ${join(out, 'dossier.json')}`,
 );
